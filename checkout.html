@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout - Premium Hub</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-grid"></div>
+
+  <main class="checkout">
+    <div class="checkout-header">
+      <p class="eyebrow">Checkout</p>
+      <h1>Konfirmasi Langganan</h1>
+      <p class="sub">Pastikan data kamu benar sebelum melanjutkan pembayaran.</p>
+    </div>
+
+    <div class="checkout-grid">
+      <div class="checkout-card">
+        <h3>Ringkasan Pesanan</h3>
+        <div class="invoice-list" id="checkout-invoice"></div>
+      </div>
+
+      <div class="checkout-card">
+        <h3>Langkah Selanjutnya</h3>
+        <p class="muted">Kamu bisa mengirim data ke WhatsApp admin atau kembali ke halaman utama.</p>
+        <div class="modal-actions">
+          <button class="btn whatsapp" id="checkout-whatsapp" type="button">Kirim ke WhatsApp</button>
+          <a class="btn ghost" href="index.html">Kembali ke Beranda</a>
+        </div>
+        <p class="checkout-note">*Pembayaran asli akan diintegrasikan setelah memilih provider.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const invoice = document.querySelector("#checkout-invoice");
+    const whatsappBtn = document.querySelector("#checkout-whatsapp");
+    const raw = localStorage.getItem("premiumOrder");
+    const currency = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    });
+
+    const ADMIN_WA = "6281234567890";
+
+    const buildWhatsappText = (data) => {
+      return [
+        "Halo, saya ingin berlangganan:",
+        `Nama: ${data.nama}`,
+        `Email: ${data.email}`,
+        `Telepon: ${data.telepon}`,
+        `Layanan: ${data.plan}`,
+        `Harga: ${currency.format(data.price)} / bulan`,
+        `Metode bayar: ${data.payment}`,
+      ].join("\\n");
+    };
+
+    if (!raw) {
+      invoice.innerHTML = "<p class=\"muted\">Belum ada data pesanan. Kembali ke beranda.</p>";
+    } else {
+      const data = JSON.parse(raw);
+      const rows = [
+        ["Nama", data.nama],
+        ["Email", data.email],
+        ["No. Telepon", data.telepon],
+        ["Layanan", data.plan],
+        ["Harga", `${currency.format(data.price)} / bulan`],
+        ["Metode Bayar", data.payment],
+        ["Mode", data.mode === "login" ? "Login" : "Sign Up"],
+      ];
+      invoice.innerHTML = rows
+        .map(([label, value]) => `<div class="invoice-item"><span>${label}</span><span>${value}</span></div>`)
+        .join("");
+
+      whatsappBtn.addEventListener("click", () => {
+        const text = encodeURIComponent(buildWhatsappText(data));
+        const url = `https://wa.me/${ADMIN_WA}?text=${text}`;
+        window.open(url, "_blank");
+      });
+    }
+  </script>
+</body>
+</html>
